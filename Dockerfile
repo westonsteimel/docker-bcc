@@ -6,53 +6,42 @@
 #	-v /etc/localtime:/etc/localtime:ro \
 #	r.j3ss.co/bcc-tools
 #
-FROM debian:buster-slim
-MAINTAINER Jessica Frazelle <jess@linux.com>
+FROM alpine
 
 ENV PATH /usr/share/bcc/tools:$PATH
 
-# Add non-free apt sources
-RUN sed -i "s#deb http://deb.debian.org/debian buster main#deb http://deb.debian.org/debian buster main contrib non-free#g" /etc/apt/sources.list
-
-RUN apt-get update && apt-get install -y \
+RUN apk update && apk --no-cache add \
     ca-certificates \
 	clang \
 	curl \
-	gcc \
 	git \
-	g++ \
-    --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    build-base \
+    bash
 
 # Install dependencies for libbcc
 # FROM: https://github.com/iovisor/bcc/blob/master/INSTALL.md#install-build-dependencies
-RUN apt-get update && apt-get install -y \
-	debhelper \
+RUN apk update && apk --no-cache add \
 	cmake \
-	libllvm3.9 \
-	llvm-dev \
-	libclang-dev \
+	linux-headers \
+    llvm5-dev \
+    llvm5-libs \
+	clang-dev \
+    clang-libs \
+    clang-static \
 	libelf-dev \
 	bison \
 	flex \
 	libedit-dev \
-	clang-format \
-	python \
-	python-netaddr \
-	python-pyroute2 \
-	luajit \
-	libluajit-5.1-dev \
+	python3 \
+	luajit-dev \
 	arping \
-	iperf \
+	iperf3 \
 	ethtool \
-	devscripts \
-	zlib1g-dev \
-	libfl-dev \
-    --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
+    llvm5-static \
+    zlib-dev
 
 # Build libbcc
-ENV BCC_VERSION v0.9.0
+ENV BCC_VERSION v0.10.0
 RUN git clone --depth 1 --branch "$BCC_VERSION" https://github.com/iovisor/bcc.git /usr/src/bcc \
 	&& ( \
 		cd /usr/src/bcc \
